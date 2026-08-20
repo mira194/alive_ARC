@@ -48,6 +48,13 @@ TOKEN = os.environ.get("ALIVE_TOKEN")
 WORKSPACE_ID = os.environ.get("ALIVE_WORKSPACE_ID")
 THREAD_ID = os.environ.get("ALIVE_THREAD_ID")
 ENTRY_DEPLOYMENT_ID = os.environ.get("ALIVE_ENTRY_DEPLOYMENT_ID")
+# Deployment DÉDIÉ au nettoyage (rm -rf), séparé de ENTRY_DEPLOYMENT_ID.
+# IMPORTANT: ne jamais réutiliser ENTRY_DEPLOYMENT_ID pour ça — il a toute
+# la chaîne after_deployment (LALM1, LALM2, ...) accrochée derrière lui,
+# donc un simple appel de nettoyage déclencherait AUSSI toute la cascade
+# coûteuse à chaque fois (le trigger se déclenche sur la fin du run, peu
+# importe son contenu). Crée un deployment séparé, trigger=manual, SANS
+# aucun after_deployment pointant dessus, et mets son id ici.
 CLEANUP_DEPLOYMENT_ID = os.environ.get("ALIVE_CLEANUP_DEPLOYMENT_ID")
 
 if not all([TOKEN, WORKSPACE_ID, THREAD_ID, ENTRY_DEPLOYMENT_ID]):
@@ -55,8 +62,7 @@ if not all([TOKEN, WORKSPACE_ID, THREAD_ID, ENTRY_DEPLOYMENT_ID]):
         "Missing env vars. Set ALIVE_TOKEN, ALIVE_WORKSPACE_ID, "
         "ALIVE_THREAD_ID, ALIVE_ENTRY_DEPLOYMENT_ID (.env ou variables d'env)."
     )
-if not CLEANUP_DEPLOYMENT_ID:
-    sys.exit("Missing ALIVE_CLEANUP_DEPLOYMENT_ID (.env ou variables d'env).")
+
 HEADERS = {"Authorization": f"Bearer {TOKEN}"}
 JSON_HEADERS = {**HEADERS, "Content-Type": "application/json"}
 
@@ -106,6 +112,94 @@ def build_entry_input(item_id: str) -> str:
     return ENTRY_PROMPT_TEMPLATE.format(item_id=item_id)
 
 
+def peek_latest_execution_id(client: httpx.Client, after_msg_id: str, verbose: bool = True) -> str:
+    """Un seul appel GET /messages (pas une boucle de polling complète) pour
+    voir si un execution_id DIFFÉRENT de celui qu'on suit est visible côté
+    plateforme, au moment précis où on détecte une boucle — avant d'annuler.
+    EXPÉRIMENTAL: aucune confirmation que les messages en cours de
+    génération apparaissent ici avant leur run.completed. Si ça ne renvoie
+    rien d'utile, cancel_run continue avec l'id qu'on suivait déjà — ça ne
+    peut pas aggraver la situation, juste ne pas l'améliorer."""
+    try:
+        resp = client.get(
+            f"{BASE}/threads/{THREAD_ID}/messages",
+            headers=HEADERS,
+            params={"after": after_msg_id, "limit": 10},
+            timeout=10.0,
+        )
+        resp.raise_for_status()
+        msgs = resp.json().get("data", [])
+        for m in reversed(msgs):  # le plus récent en premier
+            run_info = m.get("run") or {}
+            exec_id = run_info.get("execution_id")
+            if exec_id:
+                if verbose:
+                    print(f"[peek] execution_id trouvé via GET /messages: {exec_id}")
+                return exec_id
+        if verbose:
+            print(f"[peek] aucun nouveau message/execution_id trouvé "
+                  f"({len(msgs)} message(s) inspecté(s) après {after_msg_id}).")
+    except Exception as e:
+        if verbose:
+            print(f"[peek] échec — {e}")
+    return None
+
+
+def get_execution_status(client: httpx.Client, execution_id: str, verbose: bool = True) -> dict:
+    """Interroge GET /executions/{execution_id} pour connaître le VRAI statut
+    d'une exécution, indépendamment de ce qu'on pense savoir côté client.
+    Utile pour diagnostiquer un décalage entre l'execution_id qu'on suit
+    (dernier vu via run.created) et ce qui tourne réellement côté serveur —
+    si ce statut est déjà terminal (completed/cancelled/error) avant même
+    qu'on tente d'annuler, ça confirme que notre id est périmé plutôt que
+    d'attendre un 409 ambigu après coup."""
+    try:
+        resp = client.get(
+            f"{BASE}/executions/{execution_id}",
+            headers=HEADERS,
+            timeout=15.0,
+        )
+        if resp.status_code == 404:
+            return {"status": "not_found"}
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+
+def cancel_run(client: httpx.Client, execution_id: str, verbose: bool = True) -> bool:
+    """Annule RÉELLEMENT un run en cours côté serveur. Contrairement à la
+    simple fermeture de notre connexion SSE (qui ne stoppe ni la génération
+    ni la facturation — confirmé par la doc de cet endpoint: "Closing the
+    SSE stream does not cancel"), ceci envoie un vrai signal d'arrêt.
+    Retourne 200 dès que le signal est envoyé (pas forcément déjà annulé —
+    il faudrait poll GET /executions/{id} pour le statut terminal 'cancelled'
+    si on veut une confirmation stricte, ce qu'on ne fait pas ici pour ne
+    pas ralentir davantage un run déjà en train de dériver)."""
+    try:
+        resp = client.post(
+            f"{BASE}/threads/{THREAD_ID}/runs/{execution_id}/cancel",
+            headers=HEADERS,
+            timeout=15.0,
+        )
+        if resp.status_code == 200:
+            if verbose:
+                print(f"[cancel] Signal d'annulation envoyé pour {execution_id}.")
+            return True
+        elif resp.status_code == 409:
+            if verbose:
+                print(f"[cancel] {execution_id} déjà terminé (409), rien à annuler.")
+            return False
+        else:
+            if verbose:
+                print(f"[cancel] Échec inattendu ({resp.status_code}) pour {execution_id}.")
+            return False
+    except Exception as e:
+        if verbose:
+            print(f"[cancel] ÉCHEC réseau lors de l'annulation de {execution_id} — {e}")
+        return False
+
+
 def run_chain_stream(client: httpx.Client, item_id: str,
                       verbose: bool = True, timeout: float = 6000.0,
                       max_step_chars: int = 6000) -> tuple:
@@ -127,6 +221,22 @@ def run_chain_stream(client: httpx.Client, item_id: str,
     error_events = []
     created_at_by_execution = {}
     current_step_text = []
+    current_step_execution_id = None
+    entry_execution_id = None  # id de la TOUTE PREMIÈRE étape (kickoff),
+    # jamais réinitialisé. Selon la doc mise à jour de /cancel: annuler cet
+    # id stoppe TOUTE la cascade after_deployment qui en descend, même si
+    # cette première étape est déjà terminée — c'est maintenant le moyen
+    # le plus fiable d'annuler une boucle, peu importe quelle étape
+    # exacte de la chaîne est en train de dériver.
+    last_known_message_id = None  # dernier message.id vu (via run.completed),
+    # utilisé pour ancrer un GET /messages ponctuel au moment d'une détection
+    # de boucle (peek_latest_execution_id) — voir bloc circuit-breaker.
+    awaiting_cancel_confirmation = False  # True juste après un cancel_run(),
+    # tant qu'on n'a pas revu run.created/run.completed/run.error — pendant
+    # ce laps de temps, l'annulation est asynchrone et des deltas résiduels
+    # peuvent encore arriver pour l'étape déjà annulée. On les ignore pour
+    # ne pas re-détecter une "boucle" sur ce reliquat et re-spammer des
+    # messages de coupure inutiles.
     aborted = False
 
     if verbose:
@@ -154,8 +264,27 @@ def run_chain_stream(client: httpx.Client, item_id: str,
                 exec_id = event.get("execution_id")
                 created_at_by_execution[exec_id] = time.monotonic()
                 current_step_text = []
+                current_step_execution_id = exec_id
+                if entry_execution_id is None:
+                    entry_execution_id = exec_id  # capturé UNE SEULE fois, jamais réécrasé
+                awaiting_cancel_confirmation = False  # nouvelle étape confirmée, on reprend la surveillance normale
                 if verbose:
                     print(f"[run.created] execution_id={exec_id}")
+
+            elif etype == "run.started":
+                # Nouvel événement (mise à jour serveur suite à notre
+                # signalement): porte l'execution_id des étapes ENFANTS de
+                # la cascade after_deployment — ce que run.created ne
+                # donnait jamais pour ces étapes. On le traite comme un
+                # marqueur de nouvelle étape, au même titre que run.created.
+                exec_id = event.get("execution_id")
+                if exec_id:
+                    created_at_by_execution[exec_id] = time.monotonic()
+                    current_step_text = []
+                    current_step_execution_id = exec_id
+                    awaiting_cancel_confirmation = False
+                    if verbose:
+                        print(f"[run.started] execution_id={exec_id} (étape enfant de la cascade)")
 
             elif etype == "run.node":
                 if verbose:
@@ -167,6 +296,12 @@ def run_chain_stream(client: httpx.Client, item_id: str,
                         print(f"[step] {node}")
 
             elif etype == "run.output_text.delta":
+                if awaiting_cancel_confirmation:
+                    # Reliquat post-annulation (asynchrone) — on l'ignore
+                    # silencieusement, pas de comptage ni de re-détection,
+                    # en attendant confirmation que l'étape est vraiment finie.
+                    continue
+
                 delta = event.get("delta", "")
                 current_step_text.append(delta)
                 if verbose:
@@ -183,28 +318,89 @@ def run_chain_stream(client: httpx.Client, item_id: str,
 
                 if total_len > max_step_chars or repetition_detected:
                     aborted = True
+                    reason = "répétition détectée" if repetition_detected else f"{max_step_chars} caractères dépassés"
                     if verbose:
-                        reason = "répétition détectée" if repetition_detected else f"{max_step_chars} caractères dépassés"
                         print(f"\n\n[circuit-breaker] Étape en cours interrompue ({reason}) — "
-                              f"signe probable de boucle/rumination de génération. "
-                              f"Connexion coupée pour éviter un coût incontrôlé.")
-                    break
+                              f"signe probable de boucle/rumination de génération.")
+                    # Annulation RÉELLE côté serveur. Suite à la mise à jour
+                    # de Jean-Charles: annuler entry_execution_id (le tout
+                    # premier id de la chaîne) stoppe DÉSORMAIS toute la
+                    # cascade after_deployment qui en descend, même si
+                    # cette première étape est elle-même déjà terminée.
+                    # C'est la méthode la plus fiable — on n'a plus besoin
+                    # de deviner l'id exact de l'étape en cours de dérive.
+                    ids_to_cancel = set()
+                    if entry_execution_id:
+                        ids_to_cancel.add(entry_execution_id)
+                    if current_step_execution_id:
+                        ids_to_cancel.add(current_step_execution_id)
+
+                    # Conservé en filet de sécurité supplémentaire, au cas
+                    # où entry_execution_id ne couvrirait pas 100% des cas.
+                    if last_known_message_id:
+                        peeked_id = peek_latest_execution_id(client, last_known_message_id, verbose=verbose)
+                        if peeked_id and peeked_id not in ids_to_cancel:
+                            if verbose:
+                                print(f"[peek] execution_id supplémentaire trouvé via "
+                                      f"GET /messages — ajouté à l'annulation.")
+                            ids_to_cancel.add(peeked_id)
+
+                    for eid in ids_to_cancel:
+                        # Diagnostic AVANT d'annuler: si le statut est déjà
+                        # terminal, cet id est probablement périmé — preuve
+                        # automatique plutôt que de reconstituer après coup.
+                        status_check = get_execution_status(client, eid, verbose=verbose)
+                        real_status = status_check.get("status")
+                        if verbose:
+                            print(f"[diagnostic] Statut réel de {eid} avant annulation: {real_status!r}")
+                        if real_status in ("completed", "cancelled", "error", "not_found"):
+                            if verbose:
+                                print(f"[diagnostic][SUSPECT] {eid} déjà terminal ({real_status}) "
+                                      f"alors que du texte continue d'arriver pour cette étape.")
+                        cancel_run(client, eid, verbose=verbose)
+                    # On NE FERME PAS notre connexion SSE — on continue
+                    # d'écouter sur le même flux. L'annulation est
+                    # asynchrone (la doc dit juste "signal dispatché", pas
+                    # "arrêté") — on passe en mode "attente de confirmation"
+                    # pour ignorer les deltas résiduels de cette étape et ne
+                    # pas re-déclencher sur ce reliquat.
+                    current_step_text = []
+                    current_step_execution_id = None
+                    awaiting_cancel_confirmation = True
+                    if verbose:
+                        print("[circuit-breaker] En attente de confirmation d'arrêt "
+                              "(reliquat de génération ignoré)...")
+                    continue
 
             elif etype == "run.completed":
+                awaiting_cancel_confirmation = False  # étape confirmée terminée
                 exec_id = event.get("execution_id")
                 started = created_at_by_execution.get(exec_id)
                 event["_measured_duration_seconds"] = (
                     round(time.monotonic() - started, 1) if started is not None else None
                 )
                 completed_events.append(event)
+                if event.get("id"):
+                    last_known_message_id = event["id"]
                 if verbose:
                     preview = (event.get("content") or "")[:150].replace("\n", " ")
                     extra_fields = {k: v for k, v in event.items()
                                      if k not in ("type", "content", "_measured_duration_seconds")}
                     print(f"\n[run.completed] {json.dumps(extra_fields, ensure_ascii=False)}")
                     print(f"  content: {preview}")
+                # IMPORTANT: on "clôture" le suivi de cette étape dès qu'elle
+                # se termine normalement — sans ça, si des deltas résiduels
+                # arrivent avant le prochain run.created (artefact réseau,
+                # chevauchement côté plateforme...), on les collerait sur cet
+                # execution_id déjà terminé, et une éventuelle annulation
+                # tenterait à tort d'annuler un id déjà fini (→ 409 trompeur,
+                # comme observé).
+                if exec_id == current_step_execution_id:
+                    current_step_execution_id = None
+                    current_step_text = []
 
             elif etype == "run.error":
+                awaiting_cancel_confirmation = False  # étape confirmée terminée (en erreur)
                 exec_id = event.get("execution_id")
                 started = created_at_by_execution.get(exec_id)
                 event["_measured_duration_seconds"] = (
@@ -213,12 +409,15 @@ def run_chain_stream(client: httpx.Client, item_id: str,
                 error_events.append(event)
                 if verbose:
                     print(f"\n[run.error] execution_id={exec_id}: {event.get('error')}")
+                if exec_id == current_step_execution_id:
+                    current_step_execution_id = None
+                    current_step_text = []
 
     return completed_events, error_events, aborted
 
 
 def poll_fallback(client: httpx.Client, resume_after_msg_id: str,
-                   already_seen_ids: set, quiet_period: float = 300.0,
+                   already_seen_ids: set, quiet_period: float = 240.0,
                    max_wait: float = 500.0, poll_interval: float = 2.0,
                    verbose: bool = True) -> list:
     """Filet de sécurité si la connexion SSE se coupe avant [DONE]."""
@@ -359,9 +558,22 @@ def cleanup_artifacts(client: httpx.Client, item_id: str, verbose: bool = True) 
     laissé par un run précédent, ce qui fausse silencieusement les mesures
     de variance (et la justesse) d'un batch de tests répétés sur le même item.
 
-    Passe par un run minimal et non streamé sur le deployment d'entrée qui
+    Passe par un run minimal et non streamé sur CLEANUP_DEPLOYMENT_ID (pas
+    ENTRY_DEPLOYMENT_ID — voir l'avertissement au chargement du module) qui
     exécute la suppression via ws_bash (pas d'endpoint API dédié à la
     suppression de fichiers de workspace dans la doc actuelle)."""
+    deployment_id = CLEANUP_DEPLOYMENT_ID
+    if not deployment_id:
+        if verbose:
+            print("\n[cleanup][ATTENTION] ALIVE_CLEANUP_DEPLOYMENT_ID non défini — "
+                  "utilisation de ENTRY_DEPLOYMENT_ID comme repli. Ceci va AUSSI "
+                  "déclencher toute la chaîne after_deployment (LALM1, LALM2, ...) "
+                  "à chaque nettoyage, en plus du vrai run qui suit juste après: "
+                  "coût potentiellement doublé sur chaque itération, invisible dans "
+                  "ces stats. Crée un deployment séparé sans trigger en aval et "
+                  "mets son id dans ALIVE_CLEANUP_DEPLOYMENT_ID dès que possible.")
+        deployment_id = ENTRY_DEPLOYMENT_ID
+
     cleanup_input = (
         f'Use ws_bash to run exactly this command: '
         f'rm -rf ./data/artifacts/{item_id}/ . '
@@ -379,7 +591,7 @@ def cleanup_artifacts(client: httpx.Client, item_id: str, verbose: bool = True) 
         print(f"\n[cleanup] Suppression de ./data/artifacts/{item_id}/ avant le run...")
     try:
         resp = client.post(
-            f"{BASE}/threads/{THREAD_ID}/deployments/{CLEANUP_DEPLOYMENT_ID}/runs",
+            f"{BASE}/threads/{THREAD_ID}/deployments/{deployment_id}/runs",
             headers=JSON_HEADERS,
             json=body,
             timeout=120,
@@ -398,7 +610,7 @@ def cleanup_artifacts(client: httpx.Client, item_id: str, verbose: bool = True) 
 
 
 def run_one_item(client: httpx.Client, item_id: str,
-                  verbose: bool = True, timeout: float = 800.0,
+                  verbose: bool = True, timeout: float = 1800.0,
                   enable_fallback: bool = True) -> dict:
     """End-to-end: trigger the chain (follow=chain), collect every step's
     run.completed, parse the final answer, and sum the real per-step cost."""

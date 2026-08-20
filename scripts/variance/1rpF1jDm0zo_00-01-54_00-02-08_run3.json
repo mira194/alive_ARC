@@ -1,0 +1,136 @@
+{
+  "thread_id": "th-fSObshmxPhS49U5V",
+  "entry_deployment_id": "dp-thJbRxKCguZNB7Id",
+  "item_id": "1rpF1jDm0zo_00-01-54_00-02-08",
+  "n_chain_steps": 11,
+  "n_errors": 0,
+  "n_reasoning_outputs_detected": 0,
+  "used_polling_fallback": false,
+  "aborted_by_circuit_breaker": false,
+  "total_credits_used": 56.108945999999996,
+  "total_measured_duration_seconds": 25.7,
+  "total_tokens": {
+    "prompt": 327555,
+    "completion": 10743,
+    "reasoning": 5243
+  },
+  "per_step_credits_used": [
+    {
+      "execution_id": "ex-kGlacO7UMvwcD97U",
+      "credits_used": 2.271784,
+      "duration_seconds": 25.7,
+      "tokens": {
+        "prompt": 28053,
+        "completion": 1985,
+        "reasoning": 1189
+      }
+    },
+    {
+      "execution_id": "ex-ttT0nOBSQCC2VIZj",
+      "credits_used": 7.973014,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 23509,
+        "completion": 1197,
+        "reasoning": 934
+      }
+    },
+    {
+      "execution_id": "ex-6qvZanejApGr9tfH",
+      "credits_used": 7.92992,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 24885,
+        "completion": 948,
+        "reasoning": 705
+      }
+    },
+    {
+      "execution_id": "ex-AOnVszYu5ezWwYDK",
+      "credits_used": 10.604878,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 27800,
+        "completion": 1186,
+        "reasoning": 880
+      }
+    },
+    {
+      "execution_id": "ex-rVU9OA0JOkHdv1RH",
+      "credits_used": 9.240922,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 29973,
+        "completion": 1218,
+        "reasoning": 904
+      }
+    },
+    {
+      "execution_id": "ex-KjC7xF4JiwlmyJfl",
+      "credits_used": 3.746512,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 31069,
+        "completion": 363,
+        "reasoning": 0
+      }
+    },
+    {
+      "execution_id": "ex-N1toB9IFTFip6Va2",
+      "credits_used": 2.717404,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 32299,
+        "completion": 296,
+        "reasoning": 0
+      }
+    },
+    {
+      "execution_id": "ex-07dGkKMYt7l6tpre",
+      "credits_used": 2.222766,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 33908,
+        "completion": 317,
+        "reasoning": 0
+      }
+    },
+    {
+      "execution_id": "ex-c3dbYAliUf5a74GL",
+      "credits_used": 2.01828,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 35550,
+        "completion": 339,
+        "reasoning": 0
+      }
+    },
+    {
+      "execution_id": "ex-bznzApakV5UnCObN",
+      "credits_used": 4.254888,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 29332,
+        "completion": 1422,
+        "reasoning": 465
+      }
+    },
+    {
+      "execution_id": "ex-NeZV4rpD9CLQ5evi",
+      "credits_used": 3.128578,
+      "duration_seconds": null,
+      "tokens": {
+        "prompt": 31177,
+        "completion": 1472,
+        "reasoning": 166
+      }
+    }
+  ],
+  "run_started_at": "2026-08-18T15:20:08.752166+00:00",
+  "run_ended_at": "2026-08-18T15:23:54.059821+00:00",
+  "errors": [],
+  "answer": null,
+  "confidence": null,
+  "chain_of_thought": null,
+  "raw_content": "synthesis_lalm2: done"
+}
