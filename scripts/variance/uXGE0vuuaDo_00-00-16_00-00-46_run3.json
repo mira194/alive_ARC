@@ -1,146 +1,209 @@
 {
-  "thread_id": "th-fSObshmxPhS49U5V",
-  "entry_deployment_id": "dp-thJbRxKCguZNB7Id",
+  "thread_id": "th-sUIQ2z7Wnnjhrvjk",
+  "entry_deployment_id": "dp-IJ90y6A3fe2Da3ny",
   "item_id": "uXGE0vuuaDo_00-00-16_00-00-46",
-  "n_chain_steps": 12,
-  "n_errors": 0,
+  "n_chain_steps": 15,
+  "n_errors": 2,
   "n_reasoning_outputs_detected": 0,
   "used_polling_fallback": false,
-  "aborted_by_circuit_breaker": false,
-  "total_credits_used": 71.6303,
-  "total_measured_duration_seconds": 260.6,
+  "aborted_by_circuit_breaker": true,
+  "total_credits_used": 167.496274,
+  "total_measured_duration_seconds": 416.9,
   "total_tokens": {
-    "prompt": 395812,
-    "completion": 17231,
-    "reasoning": 8291
+    "prompt": 813144,
+    "completion": 33848,
+    "reasoning": 17075
   },
   "per_step_credits_used": [
     {
-      "execution_id": "ex-Ri0p9yqlTdMZcFbu",
-      "credits_used": 2.139524,
-      "duration_seconds": 35.4,
+      "execution_id": "ex-MXR9orMke0N6Dz6l",
+      "credits_used": 6.967246,
+      "duration_seconds": 21.4,
       "tokens": {
-        "prompt": 32683,
-        "completion": 1668,
-        "reasoning": 805
-      }
-    },
-    {
-      "execution_id": "ex-LUSpXkDOPYUDkpNJ",
-      "credits_used": 5.855652,
-      "duration_seconds": 13.4,
-      "tokens": {
-        "prompt": 18631,
-        "completion": 558,
-        "reasoning": 457
-      }
-    },
-    {
-      "execution_id": "ex-Q3eJ66yeVUDEA57P",
-      "credits_used": 9.710454,
-      "duration_seconds": 29.2,
-      "tokens": {
-        "prompt": 21318,
-        "completion": 1871,
-        "reasoning": 1622
-      }
-    },
-    {
-      "execution_id": "ex-O1qD89RTwaOujlxV",
-      "credits_used": 13.295546,
-      "duration_seconds": 31.5,
-      "tokens": {
-        "prompt": 33071,
-        "completion": 2583,
-        "reasoning": 2315
-      }
-    },
-    {
-      "execution_id": "ex-rdnNye591yjBAvFj",
-      "credits_used": 7.348482,
-      "duration_seconds": 22.4,
-      "tokens": {
-        "prompt": 25207,
-        "completion": 1720,
-        "reasoning": 1073
-      }
-    },
-    {
-      "execution_id": "ex-s7hdszSlrVRillG9",
-      "credits_used": 6.348726,
-      "duration_seconds": 27.3,
-      "tokens": {
-        "prompt": 35516,
-        "completion": 1087,
-        "reasoning": 94
-      }
-    },
-    {
-      "execution_id": "ex-WLHdVAXtbFOIBpt3",
-      "credits_used": 3.762322,
-      "duration_seconds": 12.9,
-      "tokens": {
-        "prompt": 27823,
-        "completion": 105,
-        "reasoning": 0
-      }
-    },
-    {
-      "execution_id": "ex-IE43d4kpAU1HeBaO",
-      "credits_used": 4.396064,
-      "duration_seconds": 23.1,
-      "tokens": {
-        "prompt": 40223,
-        "completion": 1121,
-        "reasoning": 830
-      }
-    },
-    {
-      "execution_id": "ex-jwX2YTZHAM9puqxv",
-      "credits_used": 5.000118,
-      "duration_seconds": 23.1,
-      "tokens": {
-        "prompt": 42165,
-        "completion": 1419,
-        "reasoning": 231
-      }
-    },
-    {
-      "execution_id": "ex-WTuOKvfTtSE6vdc3",
-      "credits_used": 5.081088,
-      "duration_seconds": 13.3,
-      "tokens": {
-        "prompt": 37052,
-        "completion": 1587,
+        "prompt": 72367,
+        "completion": 2175,
         "reasoning": 350
       }
     },
     {
-      "execution_id": "ex-E0qF2EGwltyAOq5l",
-      "credits_used": 4.31433,
-      "duration_seconds": 15.1,
+      "execution_id": "ex-jEJXVi1ggopLmg3X",
+      "credits_used": 8.431984,
+      "duration_seconds": 23.3,
       "tokens": {
-        "prompt": 39850,
-        "completion": 1880,
-        "reasoning": 267
+        "prompt": 27122,
+        "completion": 1337,
+        "reasoning": 350
       }
     },
     {
-      "execution_id": "ex-K3Qr5M5gwJ7x2zM1",
-      "credits_used": 4.377994,
-      "duration_seconds": 13.9,
+      "execution_id": "ex-iEdi7hYpFgOGz64f",
+      "credits_used": 7.836266,
+      "duration_seconds": 20.7,
       "tokens": {
-        "prompt": 42273,
-        "completion": 1632,
-        "reasoning": 247
+        "prompt": 31466,
+        "completion": 1398,
+        "reasoning": 1127
+      }
+    },
+    {
+      "execution_id": "ex-AeYmXCteuxySPWkO",
+      "credits_used": 8.75873,
+      "duration_seconds": 17.2,
+      "tokens": {
+        "prompt": 33853,
+        "completion": 903,
+        "reasoning": 628
+      }
+    },
+    {
+      "execution_id": "ex-GBh3de2ehuznAm9x",
+      "credits_used": 8.528802,
+      "duration_seconds": 21.3,
+      "tokens": {
+        "prompt": 35813,
+        "completion": 1500,
+        "reasoning": 1153
+      }
+    },
+    {
+      "execution_id": "ex-rBSQFgRPr81LWXqT",
+      "credits_used": 8.324418,
+      "duration_seconds": 24.4,
+      "tokens": {
+        "prompt": 38912,
+        "completion": 1146,
+        "reasoning": 794
+      }
+    },
+    {
+      "execution_id": "ex-onxcJAEZc7dYEjC6",
+      "credits_used": 5.660208,
+      "duration_seconds": 21.2,
+      "tokens": {
+        "prompt": 16228,
+        "completion": 856,
+        "reasoning": 712
+      }
+    },
+    {
+      "execution_id": "ex-SOBz8MKteV7StzFs",
+      "credits_used": 3.846988,
+      "duration_seconds": 11.0,
+      "tokens": {
+        "prompt": 30219,
+        "completion": 1333,
+        "reasoning": 208
+      }
+    },
+    {
+      "execution_id": "ex-L4gAC8BrXrhuqBdm",
+      "credits_used": 3.671288,
+      "duration_seconds": 16.3,
+      "tokens": {
+        "prompt": 39628,
+        "completion": 1820,
+        "reasoning": 262
+      }
+    },
+    {
+      "execution_id": "ex-JeI6zpMIf1xUKyIH",
+      "credits_used": 6.381334,
+      "duration_seconds": 18.8,
+      "tokens": {
+        "prompt": 44305,
+        "completion": 2570,
+        "reasoning": 356
+      }
+    },
+    {
+      "execution_id": "ex-tG62jucu2DYYPlAU",
+      "credits_used": 15.7679,
+      "duration_seconds": 36.9,
+      "tokens": {
+        "prompt": 66040,
+        "completion": 2763,
+        "reasoning": 1756
+      }
+    },
+    {
+      "execution_id": "ex-zD9U0NPDwzKuH2aD",
+      "credits_used": 16.896352,
+      "duration_seconds": 31.4,
+      "tokens": {
+        "prompt": 125971,
+        "completion": 1447,
+        "reasoning": 0
+      }
+    },
+    {
+      "execution_id": "ex-tvFs1MkMzQqbKsce",
+      "credits_used": 15.641114,
+      "duration_seconds": 30.9,
+      "tokens": {
+        "prompt": 40724,
+        "completion": 4960,
+        "reasoning": 2871
+      }
+    },
+    {
+      "execution_id": "ex-MnFagO9TXBre6KuH",
+      "credits_used": 23.669314,
+      "duration_seconds": 52.8,
+      "tokens": {
+        "prompt": 107018,
+        "completion": 3782,
+        "reasoning": 2861
+      }
+    },
+    {
+      "execution_id": "ex-si5TwSUo7aqREri7",
+      "credits_used": 27.11433,
+      "duration_seconds": 69.3,
+      "tokens": {
+        "prompt": 103478,
+        "completion": 5858,
+        "reasoning": 3647
       }
     }
   ],
-  "run_started_at": "2026-08-19T14:17:28.312684+00:00",
-  "run_ended_at": "2026-08-19T14:21:53.304294+00:00",
-  "errors": [],
+  "run_started_at": "2026-08-27T12:48:41.383972+00:00",
+  "run_ended_at": "2026-08-27T12:56:20.169137+00:00",
+  "errors": [
+    {
+      "type": "run.error",
+      "error": "Run cancelled",
+      "execution_id": "ex-8iVcVYgle8elS94Z",
+      "status": "cancelled",
+      "credits_used": 4.386688,
+      "started_at": 1787835050962,
+      "completed_at": 1787835073048,
+      "duration_ms": 22086,
+      "tokens": {
+        "prompt": 18911,
+        "completion": 631,
+        "reasoning": 530
+      },
+      "_measured_duration_seconds": 22.0
+    },
+    {
+      "type": "run.error",
+      "error": "Run cancelled",
+      "execution_id": "ex-tK7UAWa20JLVSnzX",
+      "status": "cancelled",
+      "credits_used": 2.349036,
+      "started_at": 1787835094459,
+      "completed_at": 1787835109177,
+      "duration_ms": 14718,
+      "tokens": {
+        "prompt": 4296,
+        "completion": 843,
+        "reasoning": 791
+      },
+      "_measured_duration_seconds": 14.7
+    }
+  ],
   "answer": null,
   "confidence": null,
   "chain_of_thought": null,
-  "raw_content": "evidence_lalm: done"
+  "raw_content": "reasoning_generation: done"
 }

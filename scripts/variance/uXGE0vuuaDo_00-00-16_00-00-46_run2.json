@@ -1,146 +1,196 @@
 {
-  "thread_id": "th-fSObshmxPhS49U5V",
-  "entry_deployment_id": "dp-thJbRxKCguZNB7Id",
+  "thread_id": "th-sUIQ2z7Wnnjhrvjk",
+  "entry_deployment_id": "dp-IJ90y6A3fe2Da3ny",
   "item_id": "uXGE0vuuaDo_00-00-16_00-00-46",
-  "n_chain_steps": 12,
+  "n_chain_steps": 17,
   "n_errors": 0,
   "n_reasoning_outputs_detected": 0,
   "used_polling_fallback": false,
   "aborted_by_circuit_breaker": false,
-  "total_credits_used": 74.200676,
-  "total_measured_duration_seconds": 169.3,
+  "total_credits_used": 151.207136,
+  "total_measured_duration_seconds": 406.4,
   "total_tokens": {
-    "prompt": 381732,
-    "completion": 8625,
-    "reasoning": 4591
+    "prompt": 807729,
+    "completion": 28915,
+    "reasoning": 16381
   },
   "per_step_credits_used": [
     {
-      "execution_id": "ex-Im1BiswjzdbqPs5A",
-      "credits_used": 1.632622,
-      "duration_seconds": 16.8,
+      "execution_id": "ex-mWqhibx565vWu8wh",
+      "credits_used": 5.280554,
+      "duration_seconds": 19.0,
       "tokens": {
-        "prompt": 16561,
-        "completion": 978,
-        "reasoning": 388
+        "prompt": 53673,
+        "completion": 1730,
+        "reasoning": 391
       }
     },
     {
-      "execution_id": "ex-Cc3T9ujICxnFu2bZ",
-      "credits_used": 8.116682,
-      "duration_seconds": 12.9,
+      "execution_id": "ex-iOIXJzxgvTbnhjV7",
+      "credits_used": 9.782398,
+      "duration_seconds": 27.0,
       "tokens": {
-        "prompt": 25022,
-        "completion": 481,
-        "reasoning": 223
+        "prompt": 27425,
+        "completion": 1923,
+        "reasoning": 1567
       }
     },
     {
-      "execution_id": "ex-4vAnI2o6B9mYrQ1t",
-      "credits_used": 8.445636,
-      "duration_seconds": 24.2,
+      "execution_id": "ex-ZbmiaAqWHHGafFVM",
+      "credits_used": 8.66408,
+      "duration_seconds": 20.5,
       "tokens": {
-        "prompt": 27982,
-        "completion": 642,
-        "reasoning": 379
+        "prompt": 34728,
+        "completion": 1191,
+        "reasoning": 921
       }
     },
     {
-      "execution_id": "ex-LgPctNpSklUZIIeC",
-      "credits_used": 9.48347,
-      "duration_seconds": 15.1,
+      "execution_id": "ex-1oaJPEY0OvnmF4on",
+      "credits_used": 9.676412,
+      "duration_seconds": 19.3,
       "tokens": {
-        "prompt": 30660,
-        "completion": 678,
-        "reasoning": 415
+        "prompt": 23720,
+        "completion": 1471,
+        "reasoning": 1238
       }
     },
     {
-      "execution_id": "ex-uXgPRrentaML5Iyi",
-      "credits_used": 10.24615,
-      "duration_seconds": 17.2,
+      "execution_id": "ex-gR3FT3jmplXbNxzw",
+      "credits_used": 8.854632,
+      "duration_seconds": 23.5,
       "tokens": {
-        "prompt": 34549,
-        "completion": 901,
-        "reasoning": 638
+        "prompt": 25785,
+        "completion": 2319,
+        "reasoning": 2033
       }
     },
     {
-      "execution_id": "ex-zr7hLWUsZdAK4ht5",
-      "credits_used": 7.495746,
-      "duration_seconds": 19.2,
+      "execution_id": "ex-MoYsLhroRmv06tBA",
+      "credits_used": 7.938026,
+      "duration_seconds": 48.9,
       "tokens": {
-        "prompt": 36312,
-        "completion": 611,
-        "reasoning": 353
+        "prompt": 36050,
+        "completion": 1557,
+        "reasoning": 1069
       }
     },
     {
-      "execution_id": "ex-8idQ6JYgUtS0ciO9",
-      "credits_used": 7.431716,
-      "duration_seconds": 13.5,
+      "execution_id": "ex-UwLe0j4NOlhdOVJ9",
+      "credits_used": 4.562564,
+      "duration_seconds": 22.2,
       "tokens": {
-        "prompt": 38727,
-        "completion": 699,
-        "reasoning": 436
+        "prompt": 36478,
+        "completion": 1036,
+        "reasoning": 747
       }
     },
     {
-      "execution_id": "ex-0hy2mjc68Hse9KEf",
-      "credits_used": 7.37806,
-      "duration_seconds": 14.2,
+      "execution_id": "ex-AUl5F4DyrGgzKBhw",
+      "credits_used": 4.214568,
+      "duration_seconds": 21.8,
       "tokens": {
-        "prompt": 41702,
-        "completion": 698,
-        "reasoning": 435
+        "prompt": 38396,
+        "completion": 1153,
+        "reasoning": 803
       }
     },
     {
-      "execution_id": "ex-pL9TNC4TSeOEBLCd",
-      "credits_used": 6.231722,
-      "duration_seconds": 12.5,
+      "execution_id": "ex-MhAgPmeUWOWaSqCr",
+      "credits_used": 3.450892,
+      "duration_seconds": 25.7,
       "tokens": {
-        "prompt": 43785,
-        "completion": 692,
-        "reasoning": 429
+        "prompt": 29754,
+        "completion": 1198,
+        "reasoning": 778
       }
     },
     {
-      "execution_id": "ex-ZpfgJrxUwg2mLBGV",
-      "credits_used": 3.526334,
-      "duration_seconds": 8.9,
+      "execution_id": "ex-L51knpgalAAk8d7G",
+      "credits_used": 5.84334,
+      "duration_seconds": 17.7,
       "tokens": {
-        "prompt": 27913,
-        "completion": 877,
-        "reasoning": 367
+        "prompt": 54194,
+        "completion": 1879,
+        "reasoning": 438
       }
     },
     {
-      "execution_id": "ex-pLi5xMLyBqzzRhK8",
-      "credits_used": 2.221172,
-      "duration_seconds": 8.2,
+      "execution_id": "ex-inNUoKJiVpMjvlZS",
+      "credits_used": 4.547054,
+      "duration_seconds": 16.9,
       "tokens": {
-        "prompt": 29102,
-        "completion": 808,
-        "reasoning": 323
+        "prompt": 36382,
+        "completion": 2276,
+        "reasoning": 999
       }
     },
     {
-      "execution_id": "ex-lDb9L72QfeX0ypSl",
-      "credits_used": 1.991366,
-      "duration_seconds": 6.6,
+      "execution_id": "ex-2YwERCslw3brp5iI",
+      "credits_used": 6.61735,
+      "duration_seconds": 18.1,
       "tokens": {
-        "prompt": 29417,
-        "completion": 560,
-        "reasoning": 205
+        "prompt": 45085,
+        "completion": 2154,
+        "reasoning": 375
+      }
+    },
+    {
+      "execution_id": "ex-akOY8fTOuUla9B7b",
+      "credits_used": 11.509548,
+      "duration_seconds": 13.7,
+      "tokens": {
+        "prompt": 52595,
+        "completion": 805,
+        "reasoning": 416
+      }
+    },
+    {
+      "execution_id": "ex-Z8JCQxMffV8DzFLL",
+      "credits_used": 12.2135,
+      "duration_seconds": 18.2,
+      "tokens": {
+        "prompt": 88953,
+        "completion": 404,
+        "reasoning": 50
+      }
+    },
+    {
+      "execution_id": "ex-wMsW67NDv5gfPj8I",
+      "credits_used": 21.705496,
+      "duration_seconds": 37.8,
+      "tokens": {
+        "prompt": 109433,
+        "completion": 3816,
+        "reasoning": 2459
+      }
+    },
+    {
+      "execution_id": "ex-9NntEqzAX2JO9Unl",
+      "credits_used": 11.915086,
+      "duration_seconds": 32.6,
+      "tokens": {
+        "prompt": 56073,
+        "completion": 2377,
+        "reasoning": 2062
+      }
+    },
+    {
+      "execution_id": "ex-Q77LQjNz3JxW4goA",
+      "credits_used": 14.431636,
+      "duration_seconds": 23.5,
+      "tokens": {
+        "prompt": 59005,
+        "completion": 1626,
+        "reasoning": 35
       }
     }
   ],
-  "run_started_at": "2026-08-19T14:10:09.420618+00:00",
-  "run_ended_at": "2026-08-19T14:13:02.618702+00:00",
+  "run_started_at": "2026-08-27T12:37:35.985331+00:00",
+  "run_ended_at": "2026-08-27T12:44:27.909178+00:00",
   "errors": [],
   "answer": null,
   "confidence": null,
   "chain_of_thought": null,
-  "raw_content": "evidence_lalm: done"
+  "raw_content": "reasoning_generation: done"
 }

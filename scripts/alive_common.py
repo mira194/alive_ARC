@@ -66,7 +66,9 @@ if not all([TOKEN, WORKSPACE_ID, THREAD_ID, ENTRY_DEPLOYMENT_ID]):
 HEADERS = {"Authorization": f"Bearer {TOKEN}"}
 JSON_HEADERS = {**HEADERS, "Content-Type": "application/json"}
 
-ENTRY_PROMPT_TEMPLATE = '''Use ws_grep to locate the entry for id "{item_id}" in ./data/MMAR/MMAR-meta.json.
+ENTRY_PROMPT_TEMPLATE = '''
+all under ./data 
+use ws_grep to locate the entry for id "{item_id}" in MMAR-meta.json.
 Do NOT use ws_read on this file — do not load the full file into context 
 under any circumstance. Use only the matched line(s)/context returned by 
 ws_grep to extract these fields from the matched item: question, choices, 
@@ -75,7 +77,7 @@ you will need them again for the final JSON below, after the audio_split
 step (which returns different fields and does NOT include them).
 
 Use audio_split skill via the bundled script ONLY:
-  python skills/audio_split/scripts/split_audio.py <audio_path> ./data/artifacts/<id>/
+  python ./skills/audio_split/scripts/split_audio.py <audio_path> ./data/artifacts/<id>/
 Do NOT implement the split inline (do not write your own librosa/soundfile 
 code, do not load the raw audio array yourself). Call the script above via 
 a single tool call. Its output gives you ONLY: full, seg1, seg2, seg3, 
@@ -322,21 +324,31 @@ def run_chain_stream(client: httpx.Client, item_id: str,
                     if verbose:
                         print(f"\n\n[circuit-breaker] Étape en cours interrompue ({reason}) — "
                               f"signe probable de boucle/rumination de génération.")
-                    # Annulation RÉELLE côté serveur. Suite à la mise à jour
-                    # de Jean-Charles: annuler entry_execution_id (le tout
-                    # premier id de la chaîne) stoppe DÉSORMAIS toute la
-                    # cascade after_deployment qui en descend, même si
-                    # cette première étape est elle-même déjà terminée.
-                    # C'est la méthode la plus fiable — on n'a plus besoin
-                    # de deviner l'id exact de l'étape en cours de dérive.
+                    # Annulation RÉELLE côté serveur. IMPORTANT (découvert
+                    # empiriquement): annuler entry_execution_id stoppe TOUTE
+                    # la cascade qui en descend — y compris les étapes SAINES
+                    # qui n'ont même pas encore démarré. C'est trop radical
+                    # pour un usage courant: une boucle sur l'étape 3/9 ferait
+                    # perdre les étapes 4-9 en entier, pas juste réparer 3.
+                    # Priorité maintenant à current_step_execution_id, qu'on
+                    # obtient de façon fiable en temps réel via run.started
+                    # (les ids enfants de la cascade, désormais exposés) —
+                    # ça permet une annulation CIBLÉE, sans tuer le reste de
+                    # la chaîne. entry_execution_id n'est utilisé qu'en tout
+                    # dernier recours, si on n'a vraiment aucun autre id.
                     ids_to_cancel = set()
-                    if entry_execution_id:
-                        ids_to_cancel.add(entry_execution_id)
                     if current_step_execution_id:
                         ids_to_cancel.add(current_step_execution_id)
+                    elif entry_execution_id:
+                        if verbose:
+                            print("[cancel] Aucun id d'étape précis connu — "
+                                  "repli sur entry_execution_id (ATTENTION: "
+                                  "annulera TOUTE la cascade restante, pas "
+                                  "juste l'étape fautive).")
+                        ids_to_cancel.add(entry_execution_id)
 
                     # Conservé en filet de sécurité supplémentaire, au cas
-                    # où entry_execution_id ne couvrirait pas 100% des cas.
+                    # où on n'aurait toujours aucun id via les moyens ci-dessus.
                     if last_known_message_id:
                         peeked_id = peek_latest_execution_id(client, last_known_message_id, verbose=verbose)
                         if peeked_id and peeked_id not in ids_to_cancel:
